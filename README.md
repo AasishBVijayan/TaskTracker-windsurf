@@ -1,4 +1,4 @@
-# Task Tracker Web Application
+# Task Tracker Web Application (TaskTracker-windsurf)
 
 A full-stack task management application built with React, Node.js, Express, MongoDB, and JWT authentication.
 
@@ -10,6 +10,9 @@ A full-stack task management application built with React, Node.js, Express, Mon
 - **Task Organization**: Filter by status and priority, sort by due date
 - **Dashboard**: Overview of task statistics and visual task cards
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Subtasks**: Add subtasks to any task for better organization
+- **Dark/Light Mode**: Toggle between themes for comfortable viewing
+- **Profile Management**: Edit user profile information
 
 ### Technical Features
 - JWT-based authentication with secure token handling
@@ -46,8 +49,8 @@ demo/
 ├── server/                 # Backend application
 │   ├── config/            # Database configuration
 │   ├── middleware/        # Authentication middleware
-│   ├── models/            # MongoDB models (User, Task)
-│   ├── routes/            # API routes (auth, tasks)
+│   ├── models/            # MongoDB models (User, Task, Subtask)
+│   ├── routes/            # API routes (auth, tasks, subtasks)
 │   ├── server.js          # Express server entry point
 │   ├── package.json       # Backend dependencies
 │   └── .env.example       # Environment variables template
@@ -55,7 +58,7 @@ demo/
 │   ├── public/            # Static files
 │   ├── src/
 │   │   ├── components/    # React components
-│   │   ├── context/       # React context (Auth)
+│   │   ├── context/       # React context (Auth, Theme)
 │   │   ├── types/         # TypeScript type definitions
 │   │   ├── utils/         # Utility functions (API)
 │   │   ├── App.tsx        # Main App component
@@ -109,7 +112,7 @@ JWT_SECRET=your_super_secret_jwt_key_make_it_long_and_random
 JWT_EXPIRE=30d
 
 # Server
-PORT=5000
+PORT=5001
 NODE_ENV=development
 
 # Client URL (for CORS)
@@ -128,7 +131,7 @@ The frontend `.env` file should contain:
 
 ```env
 # API URL
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:5001/api
 ```
 
 ### 3. Database Setup
@@ -155,7 +158,7 @@ Make sure MongoDB is running on your system:
 cd server
 npm run dev
 ```
-The server will start on `http://localhost:5000`
+The server will start on `http://localhost:5001`
 
 #### Start the Frontend Development Server
 Open a new terminal:
@@ -169,22 +172,34 @@ The frontend will start on `http://localhost:3000`
 
 1. **Register**: Create a new account at `http://localhost:3000/register`
 2. **Login**: Sign in at `http://localhost:3000/login`
-3. **Dashboard**: View and manage your tasks
-4. **Create Tasks**: Click "New Task" to add tasks
-5. **Manage Tasks**: Edit or delete existing tasks
-6. **Filter & Sort**: Use filters to organize your tasks
+3. **Dashboard**: View task statistics and overview
+4. **My Tasks**: Full task management interface
+5. **Completed**: View completed tasks only
+6. **Calendar**: Monthly calendar view with tasks
+7. **Create Tasks**: Click "Add New Task" to add tasks
+8. **Manage Tasks**: Edit or delete existing tasks
+9. **Subtasks**: Add subtasks to any existing task
+10. **Profile**: Edit your profile information
+11. **Theme**: Toggle between dark and light modes
 
 ## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - Login user
+- `PUT /api/auth/profile` - Update user profile
 
 ### Tasks
 - `GET /api/tasks` - Get all user tasks (with query params for filtering/sorting)
 - `POST /api/tasks` - Create a new task
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
+
+### Subtasks
+- `GET /api/subtasks/task/:taskId` - Get all subtasks for a task
+- `POST /api/subtasks` - Create a new subtask
+- `PUT /api/subtasks/:id` - Update a subtask
+- `DELETE /api/subtasks/:id` - Delete a subtask
 
 ### Query Parameters for Tasks
 - `status`: Filter by status (`To-Do`, `In Progress`, `Completed`)
@@ -207,10 +222,21 @@ The frontend will start on `http://localhost:3000`
 ```javascript
 {
   title: String (required),
-  description: String (required),
+  description: String (optional),
   status: String (enum: ['To-Do', 'In Progress', 'Completed'], default: 'To-Do'),
   priority: String (enum: ['Low', 'Medium', 'High'], default: 'Medium'),
   dueDate: Date (required),
+  user: ObjectId (ref: 'User', required),
+  createdAt: Date (default: Date.now)
+}
+```
+
+### Subtask Model
+```javascript
+{
+  title: String (required),
+  completed: Boolean (default: false),
+  task: ObjectId (ref: 'Task', required),
   user: ObjectId (ref: 'User', required),
   createdAt: Date (default: Date.now)
 }
@@ -266,7 +292,7 @@ npm start
    - Verify JWT_SECRET is set in server .env
 
 4. **Port Conflicts**
-   - Change PORT in server .env if 5000 is in use
+   - Change PORT in server .env if 5001 is in use
    - Frontend automatically uses next available port if 3000 is busy
 
 ### Environment Variables Checklist
